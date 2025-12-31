@@ -265,7 +265,7 @@ sendBegin model =
         |> elmTestPort__send
 
 
-init : InitArgs -> ( Model, Cmd Msg )
+init : InitArgs -> Model
 init { processes, globs, paths, fuzzRuns, initialSeed, report, runners } =
     let
         { indexedRunners, autoFail } =
@@ -295,24 +295,21 @@ init { processes, globs, paths, fuzzRuns, initialSeed, report, runners } =
 
         testReporter =
             createReporter report
-
-        model =
-            { available = Dict.fromList indexedRunners
-            , runInfo =
-                { testCount = testCount
-                , globs = globs
-                , paths = paths
-                , fuzzRuns = fuzzRuns
-                , initialSeed = initialSeed
-                }
-            , processes = processes
-            , nextTestToRun = 0
-            , results = []
-            , testReporter = testReporter
-            , autoFail = autoFail
-            }
     in
-    ( model, Cmd.none )
+    { available = Dict.fromList indexedRunners
+    , runInfo =
+        { testCount = testCount
+        , globs = globs
+        , paths = paths
+        , fuzzRuns = fuzzRuns
+        , initialSeed = initialSeed
+        }
+    , processes = processes
+    , nextTestToRun = 0
+    , results = []
+    , testReporter = testReporter
+    , autoFail = autoFail
+    }
 
 
 failInit : String -> Report -> Int -> ( Model, Cmd Msg )
@@ -394,7 +391,7 @@ run { runs, seed, report, globs, paths, processes } possiblyTests =
             runners =
                 Test.Runner.fromTest runs (Random.initialSeed seed) (Test.concat tests)
 
-            wrappedInit =
+            model =
                 init
                     { initialSeed = seed
                     , processes = processes
@@ -406,7 +403,7 @@ run { runs, seed, report, globs, paths, processes } possiblyTests =
                     }
         in
         Platform.worker
-            { init = \_ -> wrappedInit
+            { init = \_ -> ( model, Cmd.none )
             , update = update
             , subscriptions = \_ -> elmTestPort__receive Receive
             }
