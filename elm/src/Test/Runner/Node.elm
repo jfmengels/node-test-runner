@@ -295,8 +295,18 @@ init { processes, globs, paths, fuzzRuns, initialSeed, report, runners } =
 
         testReporter =
             createReporter report
+
+        availableRunnersWithCache : Array Runner
+        availableRunnersWithCache =
+            Array.map
+                (\runner ->
+                    { run = runner.run
+                    , labels = runner.labels
+                    }
+                )
+                availableRunners
     in
-    { available = availableRunners
+    { available = availableRunnersWithCache
     , runInfo =
         { testCount = testCount
         , globs = globs
