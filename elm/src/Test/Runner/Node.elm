@@ -252,15 +252,15 @@ sendBegin model =
             , ( "testCount", Encode.int model.runInfo.testCount )
             ]
 
-        extraFields =
+        fields =
             case model.testReporter.reportBegin model.runInfo of
                 Just report ->
-                    [ ( "message", report ) ]
+                    ( "message", report ) :: baseFields
 
                 Nothing ->
-                    []
+                    baseFields
     in
-    Encode.object (baseFields ++ extraFields)
+    Encode.object fields
         |> Encode.encode 0
         |> elmTestPort__send
 
