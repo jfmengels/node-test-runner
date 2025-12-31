@@ -247,6 +247,16 @@ sendResults isFinished testReporter results =
                 |> List.foldl addToKeyValues []
                 |> Encode.object
           )
+        , ( "outcomes"
+          , Encode.list
+                (\( _, result ) ->
+                    Encode.object
+                        [ ( "labels", Encode.list Encode.string result.labels )
+                        , ( "outcome", Encode.string (Debug.toString result.outcome) )
+                        ]
+                )
+                results
+          )
         ]
         |> Encode.encode 0
         |> elmTestPort__send
