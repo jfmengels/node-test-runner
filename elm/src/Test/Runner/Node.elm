@@ -12,7 +12,7 @@ passed and 2 if any failed. Returns 1 if something went wrong.
 
 -}
 
-import Dict exposing (Dict)
+import Array exposing (Array)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Platform
@@ -56,7 +56,7 @@ type alias RunnerOptions =
 
 
 type alias Model =
-    { available : Dict TestId Runner
+    { available : Array Runner
     , runInfo : RunInfo
     , testReporter : TestReporter
     , results : List ( TestId, TestResult )
@@ -89,7 +89,7 @@ port elmTestPort__receive : (Decode.Value -> msg) -> Sub msg
 
 dispatch : Model -> Posix -> Cmd Msg
 dispatch model startTime =
-    case Dict.get model.nextTestToRun model.available of
+    case Array.get model.nextTestToRun model.available of
         Nothing ->
             -- We're finished! Nothing left to run.
             sendResults True model.testReporter model.results
@@ -268,35 +268,35 @@ sendBegin model =
 init : InitArgs -> Model
 init { processes, globs, paths, fuzzRuns, initialSeed, report, runners } =
     let
-        { indexedRunners, autoFail } =
+        { availableRunners, autoFail } =
             case runners of
                 Plain runnerList ->
-                    { indexedRunners = List.indexedMap (\a b -> ( a, b )) runnerList
+                    { availableRunners = Array.fromList runnerList
                     , autoFail = Nothing
                     }
 
                 Only runnerList ->
-                    { indexedRunners = List.indexedMap (\a b -> ( a, b )) runnerList
+                    { availableRunners = Array.fromList runnerList
                     , autoFail = Just "Test.only was used"
                     }
 
                 Skipping runnerList ->
-                    { indexedRunners = List.indexedMap (\a b -> ( a, b )) runnerList
+                    { availableRunners = Array.fromList runnerList
                     , autoFail = Just "Test.skip was used"
                     }
 
                 Invalid str ->
-                    { indexedRunners = []
+                    { availableRunners = Array.empty
                     , autoFail = Just str
                     }
 
         testCount =
-            List.length indexedRunners
+            Array.length availableRunners
 
         testReporter =
             createReporter report
     in
-    { available = Dict.fromList indexedRunners
+    { available = availableRunners
     , runInfo =
         { testCount = testCount
         , globs = globs
@@ -316,7 +316,7 @@ failInit : String -> Report -> Int -> ( Model, Cmd Msg )
 failInit message report _ =
     let
         model =
-            { available = Dict.empty
+            { available = Array.empty
             , runInfo =
                 { testCount = 0
                 , globs = []
