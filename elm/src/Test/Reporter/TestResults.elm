@@ -86,8 +86,8 @@ outcomesFromExpectations expectations =
                             [ Failed failures ]
             in
             List.concat
-                [ List.map Passed builder.passes
-                , List.map Todo builder.todos
+                [ builder.passes
+                , builder.todos
                 , failuresList
                 ]
 
@@ -96,8 +96,8 @@ outcomesFromExpectations expectations =
 
 
 type alias OutcomeBuilder =
-    { passes : List DistributionReport
-    , todos : List String
+    { passes : List Outcome
+    , todos : List Outcome
     , failures : List ( Failure, DistributionReport )
     }
 
@@ -107,7 +107,7 @@ outcomesFromExpectationsHelp expectation builder =
     case Test.Runner.getFailureReason expectation of
         Just failure ->
             if Test.Runner.isTodo expectation then
-                { builder | todos = failure.description :: builder.todos }
+                { builder | todos = Todo failure.description :: builder.todos }
 
             else
                 { builder
@@ -121,6 +121,6 @@ outcomesFromExpectationsHelp expectation builder =
         Nothing ->
             { builder
                 | passes =
-                    Test.Runner.getDistributionReport expectation
+                    Passed (Test.Runner.getDistributionReport expectation)
                         :: builder.passes
             }
