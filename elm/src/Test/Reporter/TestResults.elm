@@ -85,11 +85,17 @@ outcomesFromExpectations expectations =
                         failures ->
                             [ Failed failures ]
             in
-            List.concat
-                [ builder.passes
-                , builder.todos
-                , failuresList
-                ]
+            -- It's most likely that there will be no todos or failures,
+            -- so avoid unnecessary concatenation in that case.
+            if List.isEmpty builder.todos && List.isEmpty failuresList then
+                builder.passes
+
+            else
+                List.concat
+                    [ builder.passes
+                    , builder.todos
+                    , failuresList
+                    ]
 
         [] ->
             []
