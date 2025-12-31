@@ -13,6 +13,7 @@ passed and 2 if any failed. Returns 1 if something went wrong.
 -}
 
 import Array exposing (Array)
+import Dict exposing (Dict)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Platform
@@ -42,6 +43,13 @@ type alias InitArgs =
     , fuzzRuns : Int
     , runners : SeededRunners
     , report : Report
+    , outcomeCache : Dict (List String) (List Outcome)
+    }
+
+
+type alias Runner =
+    { run : () -> List Outcome
+    , labels : List String
     }
 
 
@@ -97,7 +105,7 @@ dispatch model startTime =
         Just config ->
             let
                 outcomes =
-                    outcomesFromExpectations (config.run ())
+                    config.run ()
             in
             Time.now
                 |> Task.perform (Complete config.labels outcomes startTime)
@@ -266,7 +274,7 @@ sendBegin model =
 
 
 init : InitArgs -> Model
-init { processes, globs, paths, fuzzRuns, initialSeed, report, runners } =
+init { processes, globs, paths, fuzzRuns, initialSeed, report, runners, outcomeCache } =
     let
         { availableRunners, autoFail } =
             case runners of
@@ -300,9 +308,16 @@ init { processes, globs, paths, fuzzRuns, initialSeed, report, runners } =
         availableRunnersWithCache =
             Array.map
                 (\runner ->
-                    { run = runner.run
-                    , labels = runner.labels
-                    }
+                    case Dict.get runner.labels outcomeCache of
+                        Just outcomes ->
+                            { run = \() -> outcomes
+                            , labels = runner.labels
+                            }
+
+                        Nothing ->
+                            { run = \() -> outcomesFromExpectations (runner.run ())
+                            , labels = runner.labels
+                            }
                 )
                 availableRunners
     in
@@ -410,6 +425,7 @@ run { runs, seed, report, globs, paths, processes } possiblyTests =
                     , fuzzRuns = runs
                     , runners = runners
                     , report = report
+                    , outcomeCache = Dict.empty
                     }
         in
         Platform.worker
