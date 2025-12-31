@@ -265,8 +265,8 @@ sendBegin model =
         |> elmTestPort__send
 
 
-init : InitArgs -> Int -> ( Model, Cmd Msg )
-init { processes, globs, paths, fuzzRuns, initialSeed, report, runners } _ =
+init : InitArgs -> ( Model, Cmd Msg )
+init { processes, globs, paths, fuzzRuns, initialSeed, report, runners } =
     let
         { indexedRunners, autoFail } =
             case runners of
@@ -406,7 +406,7 @@ run { runs, seed, report, globs, paths, processes } possiblyTests =
                     }
         in
         Platform.worker
-            { init = wrappedInit
+            { init = \_ -> wrappedInit
             , update = update
             , subscriptions = \_ -> elmTestPort__receive Receive
             }
