@@ -1,6 +1,7 @@
-module Test.Reporter.Json exposing (encodeFailure, reportBegin, reportComplete, reportSummary)
+module Test.Reporter.Json exposing (encodeFailure, reasonDecoder, reportBegin, reportComplete, reportSummary)
 
 import Dict exposing (Dict)
+import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Test.Distribution exposing (DistributionReport)
 import Test.Reporter.TestResults as TestResults exposing (Failure, Outcome(..), SummaryInfo)
@@ -219,3 +220,54 @@ encodeReason description reason =
             ]
                 |> Encode.object
                 |> encodeSumType "CollectionDiff"
+
+
+reasonDecoder : Decoder Reason
+reasonDecoder =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (\sumType ->
+                case sumType of
+                    "Custom" ->
+                        Decode.succeed Custom
+
+                    "Equality" ->
+                        Decode.map2 Equality
+                            (Decode.field "expected" Decode.string)
+                            (Decode.field "actual" Decode.string)
+
+                    "Comparison" ->
+                        Decode.map2 Comparison
+                            (Decode.field "first" Decode.string)
+                            (Decode.field "second" Decode.string)
+
+                    "TODO" ->
+                        Decode.succeed TODO
+
+                    "Invalid" ->
+                        -- TODO Handle other Invalid variants
+                        Decode.succeed (Invalid BadDescription)
+
+                    "ListDiff" ->
+                        Decode.map2 ListDiff
+                            (Decode.field "expected" (Decode.list Decode.string))
+                            (Decode.field "actual" (Decode.list Decode.string))
+
+                    "CollectionDiff" ->
+                        Decode.map4
+                            (\expected actual extra missing ->
+                                CollectionDiff
+                                    { expected = expected
+                                    , actual = actual
+                                    , extra = extra
+                                    , missing = missing
+                                    }
+                            )
+                            (Decode.field "expected" Decode.string)
+                            (Decode.field "actual" Decode.string)
+                            (Decode.field "extra" (Decode.list Decode.string))
+                            (Decode.field "missing" (Decode.list Decode.string))
+
+                    _ ->
+                        Decode.fail ("Unknown type " ++ sumType ++ " for reason")
+            )

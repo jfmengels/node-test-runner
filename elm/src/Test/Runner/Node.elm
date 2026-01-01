@@ -257,7 +257,7 @@ sendResults isFinished testReporter results =
                             TestResults.Passed Distribution.NoDistribution ->
                                 Encode.object
                                     [ ( "labels", Encode.list Encode.string result.labels )
-                                    , ( "outcome", passed )
+                                    , ( "outcome", passedEncoded )
                                     ]
                                     |> Just
 
@@ -283,7 +283,7 @@ sendResults isFinished testReporter results =
                                 else
                                     Encode.object
                                         [ ( "labels", Encode.list Encode.string result.labels )
-                                        , ( "outcome", Encode.string "failure" )
+                                        , ( "outcome", Encode.string "failed" )
                                         , ( "failures", Encode.list (Tuple.first >> Test.Reporter.Json.encodeFailure) failures )
                                         ]
                                         |> Just
@@ -298,8 +298,13 @@ sendResults isFinished testReporter results =
         |> elmTestPort__send
 
 
-passed : Encode.Value
+passed : Outcome
 passed =
+    TestResults.Passed Distribution.NoDistribution
+
+
+passedEncoded : Encode.Value
+passedEncoded =
     Encode.string "passed"
 
 
@@ -525,14 +530,29 @@ decodeOutcomeCacheItem : Decoder { labels : List String, outcome : Outcome }
 decodeOutcomeCacheItem =
     Decode.map2 (\labels outcome -> { labels = labels, outcome = outcome })
         (Decode.field "labels" (Decode.list Decode.string))
-        (Decode.field "outcome" decodeOutcome)
+        (Decode.field "outcome" Decode.string
+            |> Decode.andThen
+                (\outcome ->
+                    case outcome of
+                        "passed" ->
+                            Decode.succeed passed
+
+                        "failed" ->
+                            Decode.field "failures" (Decode.list decodeFailure)
+                                |> Decode.map TestResults.Failed
+
+                        _ ->
+                            Decode.fail ("Unknown outcome type " ++ outcome)
+                )
+        )
 
 
-decodeOutcome : Decoder Outcome
-decodeOutcome =
-    Decode.string
-        -- TODO Decode better
-        |> Decode.map (\_ -> TestResults.Passed Distribution.NoDistribution)
+decodeFailure : Decoder ( TestResults.Failure, Distribution.DistributionReport )
+decodeFailure =
+    Decode.map3 (\given description reason -> ( { given = given, description = description, reason = reason }, Distribution.NoDistribution ))
+        (Decode.field "given" (Decode.oneOf [ Decode.map Just Decode.string, Decode.null Nothing ]))
+        (Decode.field "message" Decode.string)
+        (Decode.field "reason" Test.Reporter.Json.reasonDecoder)
 
 
 json : String
@@ -1194,7 +1214,7 @@ json =
       "NoUnusedExports",
       "NoUnused.ExportsTest"
     ],
-    "outcome": "failure",
+    "outcome": "failed",
     "failures": [
       {
         "given": null,
