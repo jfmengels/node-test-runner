@@ -1,4 +1,4 @@
-module Test.Reporter.Json exposing (reportBegin, reportComplete, reportSummary)
+module Test.Reporter.Json exposing (encodeFailure, reportBegin, reportComplete, reportSummary)
 
 import Dict exposing (Dict)
 import Json.Encode as Encode exposing (Value)

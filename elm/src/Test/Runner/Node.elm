@@ -21,8 +21,9 @@ import Random
 import Task
 import Test exposing (Test)
 import Test.Distribution as Distribution
+import Test.Reporter.Json
 import Test.Reporter.Reporter exposing (Report, RunInfo, TestReporter, createReporter)
-import Test.Reporter.TestResults as TestResults exposing (Outcome, TestResult, isFailure, outcomesFromExpectations)
+import Test.Reporter.TestResults as TestResults exposing (Outcome(..), TestResult, isFailure, outcomesFromExpectations)
 import Test.Runner exposing (Runner, SeededRunners(..))
 import Test.Runner.JsMessage as JsMessage exposing (JsMessage(..))
 import Time exposing (Posix)
@@ -249,18 +250,57 @@ sendResults isFinished testReporter results =
                 |> Encode.object
           )
         , ( "outcomes"
-          , Encode.list
-                (\( _, result ) ->
-                    Encode.object
-                        [ ( "labels", Encode.list Encode.string result.labels )
-                        , ( "outcome", Encode.string (Debug.toString result.outcome) )
-                        ]
-                )
-                results
+          , results
+                |> List.filterMap
+                    (\( _, result ) ->
+                        case result.outcome of
+                            TestResults.Passed Distribution.NoDistribution ->
+                                Encode.object
+                                    [ ( "labels", Encode.list Encode.string result.labels )
+                                    , ( "outcome", passed )
+                                    ]
+                                    |> Just
+
+                            TestResults.Passed _ ->
+                                Nothing
+
+                            TestResults.Failed failures ->
+                                -- Don't save outcome if there is a distribution
+                                if
+                                    List.any
+                                        (\( _, distribution ) ->
+                                            case distribution of
+                                                Distribution.NoDistribution ->
+                                                    False
+
+                                                _ ->
+                                                    True
+                                        )
+                                        failures
+                                then
+                                    Nothing
+
+                                else
+                                    Encode.object
+                                        [ ( "labels", Encode.list Encode.string result.labels )
+                                        , ( "outcome", Encode.string "failure" )
+                                        , ( "failures", Encode.list (Tuple.first >> Test.Reporter.Json.encodeFailure) failures )
+                                        ]
+                                        |> Just
+
+                            TestResults.Todo _ ->
+                                Nothing
+                    )
+                |> Encode.list identity
           )
         ]
         |> Encode.encode 0
         |> elmTestPort__send
+
+
+passed : Encode.Value
+passed =
+    Encode.string "passed"
 
 
 sendBegin : Model -> Cmd msg
