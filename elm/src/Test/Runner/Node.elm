@@ -14,14 +14,15 @@ passed and 2 if any failed. Returns 1 if something went wrong.
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Platform
 import Random
 import Task
 import Test exposing (Test)
+import Test.Distribution as Distribution
 import Test.Reporter.Reporter exposing (Report, RunInfo, TestReporter, createReporter)
-import Test.Reporter.TestResults exposing (Outcome, TestResult, isFailure, outcomesFromExpectations)
+import Test.Reporter.TestResults as TestResults exposing (Outcome, TestResult, isFailure, outcomesFromExpectations)
 import Test.Runner exposing (Runner, SeededRunners(..))
 import Test.Runner.JsMessage as JsMessage exposing (JsMessage(..))
 import Time exposing (Posix)
@@ -435,7 +436,7 @@ run { runs, seed, report, globs, paths, processes } possiblyTests =
                     , fuzzRuns = runs
                     , runners = runners
                     , report = report
-                    , outcomeCache = Dict.empty
+                    , outcomeCache = decodedOutcomeCache
                     }
         in
         Platform.worker
@@ -471,6 +472,27 @@ If there are – are they exposed?
         """
             |> String.trim
             |> String.replace "%globs" (String.join "\n" globs)
+
+
+decodedOutcomeCache : Dict (List String) (List Outcome)
+decodedOutcomeCache =
+    Decode.decodeString (Decode.list decodeOutcomeCacheItem) json
+        |> Result.withDefault []
+        |> List.foldl (\{ labels, outcome } acc -> Dict.insert labels [ outcome ] acc) Dict.empty
+
+
+decodeOutcomeCacheItem : Decoder { labels : List String, outcome : Outcome }
+decodeOutcomeCacheItem =
+    Decode.map2 (\labels outcome -> { labels = labels, outcome = outcome })
+        (Decode.field "labels" (Decode.list Decode.string))
+        (Decode.field "outcome" decodeOutcome)
+
+
+decodeOutcome : Decoder Outcome
+decodeOutcome =
+    Decode.string
+        -- TODO Decode better
+        |> Decode.map (\_ -> TestResults.Passed Distribution.NoDistribution)
 
 
 json : String
