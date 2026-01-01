@@ -476,27 +476,36 @@ run { runs, seed, report, globs, paths, processes } possiblyTests =
             }
 
     else
-        let
-            runners =
-                Test.Runner.fromTest runs (Random.initialSeed seed) (Test.concat tests)
-
-            model =
-                init
-                    { initialSeed = seed
-                    , processes = processes
-                    , globs = globs
-                    , paths = paths
-                    , fuzzRuns = runs
-                    , runners = runners
-                    , report = report
-                    , outcomeCache = decodedOutcomeCache
+        case Decode.decodeString outcomeCacheDecoder json of
+            Err failure ->
+                Platform.worker
+                    { init = failInit (Debug.toString failure) report
+                    , update = \_ model -> ( model, Cmd.none )
+                    , subscriptions = \_ -> Sub.none
                     }
-        in
-        Platform.worker
-            { init = \_ -> ( model, Cmd.none )
-            , update = update
-            , subscriptions = \_ -> elmTestPort__receive Receive
-            }
+
+            Ok outcomeCache ->
+                let
+                    runners =
+                        Test.Runner.fromTest runs (Random.initialSeed seed) (Test.concat tests)
+
+                    model =
+                        init
+                            { initialSeed = seed
+                            , processes = processes
+                            , globs = globs
+                            , paths = paths
+                            , fuzzRuns = runs
+                            , runners = runners
+                            , report = report
+                            , outcomeCache = outcomeCache
+                            }
+                in
+                Platform.worker
+                    { init = \_ -> ( model, Cmd.none )
+                    , update = update
+                    , subscriptions = \_ -> elmTestPort__receive Receive
+                    }
 
 
 noTestsFoundError : List String -> String
@@ -527,11 +536,10 @@ If there are – are they exposed?
             |> String.replace "%globs" (String.join "\n" globs)
 
 
-decodedOutcomeCache : Dict (List String) Outcome
-decodedOutcomeCache =
-    Decode.decodeString (Decode.list decodeOutcomeCacheItem) json
-        |> Result.withDefault []
-        |> List.foldl (\{ labels, outcome } acc -> Dict.insert labels outcome acc) Dict.empty
+outcomeCacheDecoder : Decoder (Dict (List String) Outcome)
+outcomeCacheDecoder =
+    Decode.list decodeOutcomeCacheItem
+        |> Decode.map (List.foldl (\{ labels, outcome } acc -> Dict.insert labels outcome acc) Dict.empty)
 
 
 decodeOutcomeCacheItem : Decoder { labels : List String, outcome : Outcome }
