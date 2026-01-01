@@ -44,7 +44,7 @@ type alias InitArgs =
     , fuzzRuns : Int
     , runners : SeededRunners
     , report : Report
-    , outcomeCache : Dict (List String) (List Outcome)
+    , outcomeCache : Dict (List String) Outcome
     }
 
 
@@ -320,8 +320,8 @@ init { processes, globs, paths, fuzzRuns, initialSeed, report, runners, outcomeC
             Array.map
                 (\runner ->
                     case Dict.get runner.labels outcomeCache of
-                        Just outcomes ->
-                            { run = \() -> outcomes
+                        Just outcome ->
+                            { run = \() -> [ outcome ]
                             , labels = runner.labels
                             }
 
@@ -474,11 +474,11 @@ If there are – are they exposed?
             |> String.replace "%globs" (String.join "\n" globs)
 
 
-decodedOutcomeCache : Dict (List String) (List Outcome)
+decodedOutcomeCache : Dict (List String) Outcome
 decodedOutcomeCache =
     Decode.decodeString (Decode.list decodeOutcomeCacheItem) json
         |> Result.withDefault []
-        |> List.foldl (\{ labels, outcome } acc -> Dict.insert labels [ outcome ] acc) Dict.empty
+        |> List.foldl (\{ labels, outcome } acc -> Dict.insert labels outcome acc) Dict.empty
 
 
 decodeOutcomeCacheItem : Decoder { labels : List String, outcome : Outcome }
