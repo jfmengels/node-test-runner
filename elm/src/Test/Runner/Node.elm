@@ -62,6 +62,7 @@ type alias RunnerOptions =
     , globs : List String
     , paths : List String
     , processes : Int
+    , rawOutcomeCache : String
     }
 
 
@@ -451,7 +452,7 @@ checkHelperReplaceMe___ _ =
 {-| Run the tests.
 -}
 run : RunnerOptions -> List ( String, List (Maybe Test) ) -> Program Int Model Msg
-run { runs, seed, report, globs, paths, processes } possiblyTests =
+run { runs, seed, report, globs, paths, processes, rawOutcomeCache } possiblyTests =
     let
         tests =
             possiblyTests
@@ -476,7 +477,7 @@ run { runs, seed, report, globs, paths, processes } possiblyTests =
             }
 
     else
-        case Decode.decodeString outcomeCacheDecoder json of
+        case Decode.decodeString outcomeCacheDecoder rawOutcomeCache of
             Err failure ->
                 Platform.worker
                     { init = failInit (Debug.toString failure) report
