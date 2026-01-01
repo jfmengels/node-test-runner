@@ -113,20 +113,25 @@ outcomesFromExpectationsHelp expectation builder =
     case Test.Runner.getFailureReason expectation of
         Just failure ->
             if Test.Runner.isTodo expectation then
-                { builder | todos = Todo failure.description :: builder.todos }
+                { passes = builder.passes
+                , todos = Todo failure.description :: builder.todos
+                , failures = builder.failures
+                }
 
             else
-                { builder
-                    | failures =
-                        ( failure
-                        , Test.Runner.getDistributionReport expectation
-                        )
-                            :: builder.failures
+                { passes = builder.passes
+                , todos = builder.todos
+                , failures =
+                    ( failure
+                    , Test.Runner.getDistributionReport expectation
+                    )
+                        :: builder.failures
                 }
 
         Nothing ->
-            { builder
-                | passes =
-                    Passed (Test.Runner.getDistributionReport expectation)
-                        :: builder.passes
+            { passes =
+                Passed (Test.Runner.getDistributionReport expectation)
+                    :: builder.passes
+            , todos = builder.todos
+            , failures = builder.failures
             }
