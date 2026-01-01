@@ -11,11 +11,11 @@ reportBegin : { globs : List String, paths : List String, fuzzRuns : Int, testCo
 reportBegin { globs, paths, fuzzRuns, testCount, initialSeed } =
     Encode.object
         [ ( "event", Encode.string "runStart" )
-        , ( "testCount", Encode.string <| String.fromInt testCount )
-        , ( "fuzzRuns", Encode.string <| String.fromInt fuzzRuns )
+        , ( "testCount", Encode.int testCount )
+        , ( "fuzzRuns", Encode.int fuzzRuns )
         , ( "globs", Encode.list Encode.string globs )
         , ( "paths", Encode.list Encode.string paths )
-        , ( "initialSeed", Encode.string <| String.fromInt initialSeed )
+        , ( "initialSeed", Encode.int initialSeed )
         ]
         |> Just
 
@@ -28,7 +28,7 @@ reportComplete { duration, labels, outcome } =
         , ( "labels", encodeLabels labels )
         , ( "failures", Encode.list identity (encodeFailures outcome) )
         , ( "distributionReports", Encode.list identity (encodeDistributionReports outcome) )
-        , ( "duration", Encode.string <| String.fromInt duration )
+        , ( "duration", Encode.int duration )
         ]
 
 
@@ -133,8 +133,8 @@ reportSummary : SummaryInfo -> Maybe String -> Value
 reportSummary { duration, passed, failed } autoFail =
     Encode.object
         [ ( "event", Encode.string "runComplete" )
-        , ( "passed", Encode.string <| String.fromInt passed )
-        , ( "failed", Encode.string <| String.fromInt failed )
+        , ( "passed", Encode.int passed )
+        , ( "failed", Encode.int failed )
         , ( "duration", Encode.string <| String.fromFloat duration )
         , ( "autoFail"
           , autoFail
