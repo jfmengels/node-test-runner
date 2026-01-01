@@ -471,3 +471,378 @@ If there are – are they exposed?
         """
             |> String.trim
             |> String.replace "%globs" (String.join "\n" globs)
+
+
+json : String
+json =
+    """
+[  {
+     "labels": [
+       "should report the correct range when exports are on multiple lines",
+       "Type aliases",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an exposed type alias if it is used in a let block type annotation",
+       "Type aliases",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an unused exposed custom type if it's part of the package's exposed API",
+       "Types",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report ReviewConfig.config",
+       "Functions and values",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an exposed function when it is used in other modules (using `exposing` to import)",
+       "Functions and values",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report a type alias that's used externally",
+       "When exposing all",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "reports an unused function (followed by a type declaration)",
+       "When exposing all",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report elements from ignored modules used in other ignored modules exposed tests even if they're in an ignored module",
+       "reportUnusedProductionExports",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report the `ReviewConfig` module",
+       "When module is never imported",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an export if it is imported by name",
+       "Imports",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an unused exposed type alias if it's present in the signature of an exposed function",
+       "Type aliases",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an unused exposed custom type if it's present in an exposed type alias (nested)",
+       "Types",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report a used exposed custom type (value usage)",
+       "Types",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should report an exposed function when it is not used in other modules, even if it is used in the module",
+       "Functions and values",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not remove a type alias used in a local let binding type annotation",
+       "When exposing all",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "reports an unused custom type",
+       "When exposing all",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should report elements never used anywhere even if they're annotated with a tag",
+       "reportUnusedProductionExports",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should report non-exposed and non-used package modules that expose a `main` function",
+       "When module is never imported",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an exposed `app` function in Lamdera applications",
+       "Lamdera support",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an unused exposed type alias if it's present in an exposed type alias (nested)",
+       "Type aliases",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an unused exposed custom type if it's present in an exposed custom type constructor's arguments (nested)",
+       "Types",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report a used exposed custom type (function declaration destructuring)",
+       "Types",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report the `main` function for an application even if it is unused",
+       "Functions and values",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "does not report a port that's used internally",
+       "When exposing all",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "reports an unused function",
+       "When exposing all",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should report functions that are only used in ignored files (helpers defined)",
+       "reportUnusedProductionExports",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report a module with main function if we don't know the project type",
+       "When module is never imported",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an exposed type if it is used in a port (output)",
+       "Type aliases",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report a used exposed type alias (used in type alias)",
+       "Type aliases",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an unused exposed custom type if it's aliased by an exposed type alias",
+       "Types",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should report an unused exposed custom type",
+       "Types",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an exposed value when it is used in other modules (using record update syntax, importing explicitly)",
+       "Functions and values",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report a custom type that's used externally",
+       "When exposing all",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "reports an unused recursive function",
+       "When exposing all",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report elements only used in ignored modules if they're annotated with a tag",
+       "reportUnusedProductionExports",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report modules exposed in a package",
+       "When module is never imported",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should report an exposed `app` function in packages",
+       "Lamdera support",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an unused exposed type alias if it's aliased by an exposed type alias",
+       "Type aliases",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report an unused exposed custom type if it's present in an exposed custom type constructor's arguments",
+       "Types",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should not report a used exposed custom type (case expression usage)",
+       "Types",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   },
+   {
+     "labels": [
+       "should propose a fix for unused exports if there are others exposed elements",
+       "Functions and values",
+       "NoUnusedExports",
+       "NoUnused.ExportsTest"
+     ],
+     "outcome": "Passed NoDistribution"
+   }
+]"""
