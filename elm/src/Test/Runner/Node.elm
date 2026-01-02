@@ -367,19 +367,19 @@ init { processes, globs, paths, fuzzRuns, initialSeed, report, runners, outcomeC
                 (\runner ->
                     case Dict.get runner.labels outcomeCache of
                         Just outcome ->
-                            let
-                                _ =
-                                    Debug.log "CACHE HIT" ()
-                            in
+                            --let
+                            --    _ =
+                            --        Debug.log "CACHE HIT" ()
+                            --in
                             { run = \() -> [ outcome ]
                             , labels = runner.labels
                             }
 
                         Nothing ->
-                            let
-                                _ =
-                                    Debug.log "CACHE MISS" ()
-                            in
+                            --let
+                            --    _ =
+                            --        Debug.log "CACHE MISS" ()
+                            --in
                             { run = \() -> outcomesFromExpectations (runner.run ())
                             , labels = runner.labels
                             }
